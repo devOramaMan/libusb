@@ -7,13 +7,27 @@ __all__ = ('make_config',)
 
 def make_config(cfg_fname, cfg_section=None):
     import sys
+    import os
+    import __main__
+    
     from pathlib import Path
     from functools import partial
     fglobals = sys._getframe(1).f_globals
     fglobals.pop("__builtins__", None)
     fglobals.pop("__cached__",   None)
     if cfg_section is None: cfg_section = fglobals["__package__"]
-    cfg_path = Path(fglobals["__file__"]).parent/cfg_fname
+
+    try:
+        #Directory path of the executing script
+        exe_cfg_path = "%s\\%s" % (os.path.dirname(__main__.__file__),cfg_fname)
+        #look for the cfg_name in the local exe path first since installer api doesn't bundle cnf
+        if Path(exe_cfg_path).exists():
+            cfg_path = "./%s" % exe_cfg_path
+        else:
+            cfg_path = Path(fglobals["__file__"]).parent/cfg_fname
+    except:
+        cfg_path = Path(fglobals["__file__"]).parent/cfg_fname
+    
     fglobals["__all__"] = ("config", "set_config")
     fglobals["config"] = get_config(cfg_path, cfg_section)
     fglobals["set_config"] = partial(set_config, fglobals)

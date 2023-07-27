@@ -5,6 +5,7 @@
 import sys
 import os
 import ctypes as ct
+from pathlib import Path
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 is_32bit = (sys.maxsize <= 2**32)
@@ -12,12 +13,22 @@ arch     = "x86" if is_32bit else "x64"
 arch_dir = os.path.join(this_dir, arch)
 
 try:
-    from ...__config__ import config
-    DLL_PATH = config.get("LIBUSB", None)
-    del config
-    if DLL_PATH is None or DLL_PATH in ("", "None"):
-        raise ImportError()
-except ImportError:
+    if 'LIBUSB_DLL_DIR' in os.environ:
+        arch_dir = os.path.join(os.environ["LIBUSB_DLL_DIR"], arch)
+        if 'LIBUSB_DLL_VERSION' in os.environ:
+            dll_name = "libusb-%s.dll" % str(os.environ["LIBUSB_DLL_VERSION"])
+        else:
+            dll_name = "libusb-1.0.dll"
+
+        DLL_PATH = os.path.join(arch_dir, dll_name)    
+        from ...__config__ import config
+        if Path(DLL_PATH).is_file() is False:
+            DLL_PATH = config.get("LIBUSB", None)
+        del config
+        if DLL_PATH is None or DLL_PATH in ("", "None"):
+            raise ImportError()
+                
+except:
     DLL_PATH = os.path.join(arch_dir, "libusb-1.0.dll")
 
 from ctypes import WinDLL as DLL  # noqa: E402,N814

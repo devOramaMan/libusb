@@ -33,6 +33,13 @@ to specify it programmatically by one of the following ways:
   # or
   libusb.config(LIBUSB=None)  # included libusb-X.X.* will be used
 
+.. code:: python
+  #or
+  os.environ['LIBUSB_DLL_DIR'] = os.path.abspath("your path dll to directory (req /x86 /x64 subfolder)")
+  os.environ['LIBUSB_DLL_VERSION'] = "1.0"
+
+  import libusb
+
 About original libusb:
 ----------------------
 
